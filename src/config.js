@@ -2,8 +2,11 @@
 
 import angular from "angular";
 import uiRouter from "angular-ui-router";
+import todoFactory from "factories/todos-factory";
+import todoOnClickFactory from "factories/todosOnClick-factory";
+import todosController from "todos/todos";
 
-const app = angular.module("app", [uiRouter]);
+const app = angular.module("app", [uiRouter, todoFactory.name, todoOnClickFactory.name]);
 
 app.config(($stateProvider, $urlRouterProvider, $locationProvider) =>{
     $urlRouterProvider.otherwise("/");
@@ -11,7 +14,8 @@ app.config(($stateProvider, $urlRouterProvider, $locationProvider) =>{
     $stateProvider
         .state("todos", {
             url: "/",
-            template: require("todos/todos.html")
+            template: require("todos/todos.html"),
+            controller: todosController
         })
         .state("about", {
             url: "/about",
