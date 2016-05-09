@@ -4,19 +4,53 @@ import _ from "lodash";
 import angular from "angular";
 
 
-const todoFactory = angular.module("app.todoFactory", []).factory("todoFactory", () => {
-    function createTask($scope, params){
-        params.createHasInput = false;
-        $scope.createTaskInput = '';
+const todoFactory = angular.module("app.todoFactory", []).factory("todoFactory", ($http) => {
+    function getTasks($scope) {
+        $http.get("/todos").success(response => {
+            $scope.todos = response.todos;
+        });
     }
 
-    function updateTask(todo){
-        todo.task = todo.updatedTask;
-        todo.isEditing = false
+    function createTask($scope){
+        var taskIsEmpty = $scope.createTaskInput == null || $scope.createTaskInput === "";
+
+        if(taskIsEmpty){
+            return;
+        }
+
+        $http.post("/todos", {
+            task: $scope.createTaskInput,
+            isCompleted: false,
+            isEditing: false
+        }).success(response => {
+            console.log(response);
+
+            getTasks($scope);
+            $scope.createTaskInput = "";
+        });
+    }
+
+    function updateTask($scope, todo){
+        $http.put(`/todos/${todo._id}`, {
+            task: todo.updatedTask
+        }).success(
+            response => {
+                console.log(response);
+
+                getTasks($scope);
+                todo.isEditing = false;
+            }
+        );
     }
 
     function deleteTask($scope, todoToDelete){
-        _.remove($scope.todos, todo => todo.task === todoToDelete.task);
+        $http.delete(`/todos/${todoToDelete._id}`).success(
+            response => {
+                console.log(response);
+
+                getTasks($scope);
+            }
+        );
     }
 
     function watchCreateTaskInput(params, $scope, val){
@@ -34,6 +68,7 @@ const todoFactory = angular.module("app.todoFactory", []).factory("todoFactory",
     }
 
     return {
+        getTasks,
         createTask,
         updateTask,
         deleteTask,
